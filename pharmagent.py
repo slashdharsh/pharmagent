@@ -2,11 +2,14 @@ import os
 from dotenv import load_dotenv
 from groq import Groq
 from tavily import TavilyClient
+import streamlit as st
 
 load_dotenv()
 
-client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
-tavily = TavilyClient(api_key=os.environ.get("TAVILY_API_KEY"))
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY") or st.secrets.get("GROQ_API_KEY", "")
+TAVILY_API_KEY = os.environ.get("TAVILY_API_KEY") or st.secrets.get("TAVILY_API_KEY", "")
+client = Groq(api_key=GROQ_API_KEY)
+tavily = TavilyClient(api_key=TAVILY_API_KEY)
 
 
 def ask_llm(prompt):

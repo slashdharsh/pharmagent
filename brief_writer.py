@@ -1,10 +1,12 @@
 import os
+import streamlit as st
 from dotenv import load_dotenv
 from groq import Groq
 
 load_dotenv()
 
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY") or st.secrets.get("GROQ_API_KEY", "")
+client = Groq(api_key=GROQ_API_KEY)
 
 
 def write_marketing_brief(drug_name, search_text):
