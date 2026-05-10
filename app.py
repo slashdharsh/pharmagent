@@ -6,12 +6,14 @@ from brief_writer import write_marketing_brief
 
 # ─────────────────────────────────────────
 # PAGE CONFIG
+# FIX 1: Changed initial_sidebar_state from "expanded" to "auto"
+# This allows the sidebar to be reopened on mobile after closing
 # ─────────────────────────────────────────
 st.set_page_config(
     page_title="PharmAgent · AI Pharma Intelligence",
     page_icon="⬡",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="auto"   # ← FIXED (was "expanded")
 )
 
 # ─────────────────────────────────────────
@@ -62,6 +64,16 @@ html, body, [class*="css"] {
     min-width: 260px !important;
 }
 [data-testid="stSidebar"] > div:first-child { padding: 0 !important; }
+
+/* FIX 2: Make sidebar toggle button always visible on mobile */
+[data-testid="collapsedControl"] {
+    display: flex !important;
+    visibility: visible !important;
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+    color: var(--accent) !important;
+}
 
 .sidebar-inner { padding: 1.75rem 1.5rem 2rem; }
 
@@ -281,9 +293,9 @@ div[data-testid="stRadio"] > label { display: none !important; }
 hr { border-color: var(--border) !important; }
 
 /* ════ FEATURE CARDS ════ */
-.feature-row { display: flex; gap: 1rem; margin-bottom: 2.5rem; }
+.feature-row { display: flex; gap: 1rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
 .feature-card {
-    flex: 1; background: var(--card); border: 1px solid var(--border);
+    flex: 1; min-width: 180px; background: var(--card); border: 1px solid var(--border);
     border-radius: 16px; padding: 1.25rem 1.5rem; position: relative;
     overflow: hidden; transition: border-color 0.2s, transform 0.2s;
 }
@@ -407,6 +419,8 @@ with st.sidebar:
 
 # ─────────────────────────────────────────
 # PAGE 1: GENERATE BRIEF
+# FIX 3: Removed the fake decorative "ENTER DRUG NAME TO ANALYZE" HTML div.
+# Now only one real Streamlit input exists — no more confusion.
 # ─────────────────────────────────────────
 if "Generate Brief" in page:
 
@@ -459,6 +473,7 @@ if "Generate Brief" in page:
             <div class="search-card-label">Enter drug name to analyze</div>
     """, unsafe_allow_html=True)
 
+    # ── REAL INPUT — only one input now, no decorative duplicate ──
     col1, col2 = st.columns([4, 1])
     with col1:
         drug_name = st.text_input(
@@ -469,7 +484,7 @@ if "Generate Brief" in page:
     with col2:
         generate = st.button("Generate →", use_container_width=True, type="primary")
 
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)  # close search-card
 
     if generate and drug_name:
         start = time.time()
@@ -507,7 +522,7 @@ if "Generate Brief" in page:
     elif generate and not drug_name:
         st.warning("Please enter a drug name to continue.")
 
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)  # close content-area
 
 
 # ─────────────────────────────────────────
@@ -620,7 +635,7 @@ elif "Saved Briefs" in page:
         total_size = sum(os.path.getsize(f"{briefs_dir}/{f}") for f in valid_files)
 
         try:
-            with open(f"{briefs_dir}/{valid_files[0]}", "r") as _f:
+            with open(f"{briefs_dir}/{valid_files[0]}", "r", encoding="utf-8") as _f:
                 latest_words = len(_f.read().split())
         except Exception:
             latest_words = 0
