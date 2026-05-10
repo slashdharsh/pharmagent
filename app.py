@@ -13,7 +13,7 @@ st.set_page_config(
     page_title="PharmAgent · AI Pharma Intelligence",
     page_icon="⬡",
     layout="wide",
-    initial_sidebar_state="auto"   # ← FIXED (was "expanded")
+    initial_sidebar_state="auto"
 )
 
 # ─────────────────────────────────────────
@@ -65,7 +65,7 @@ html, body, [class*="css"] {
 }
 [data-testid="stSidebar"] > div:first-child { padding: 0 !important; }
 
-/* FIX 2: Make sidebar toggle button always visible on mobile */
+/* FIX 2: Make collapsed sidebar toggle always visible and styled */
 [data-testid="collapsedControl"] {
     display: flex !important;
     visibility: visible !important;
@@ -73,6 +73,11 @@ html, body, [class*="css"] {
     border: 1px solid var(--border) !important;
     border-radius: 8px !important;
     color: var(--accent) !important;
+    z-index: 999 !important;
+}
+[data-testid="collapsedControl"] svg {
+    color: var(--accent) !important;
+    fill: var(--accent) !important;
 }
 
 .sidebar-inner { padding: 1.75rem 1.5rem 2rem; }
@@ -184,11 +189,10 @@ div[data-testid="stRadio"] > label { display: none !important; }
 /* ════ CONTENT ════ */
 .content-area { padding: 2.5rem 3rem; }
 
-.pg-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 3px; color: var(--accent); margin-bottom: 0.6rem; }
-.pg-title { font-size: 2rem; font-weight: 800; letter-spacing: -0.8px; color: var(--text); line-height: 1.1; margin-bottom: 0.5rem; }
-.pg-sub { font-size: 0.92rem; font-weight: 300; color: var(--muted2); max-width: 560px; line-height: 1.65; margin-bottom: 2rem; }
-
-/* ════ SEARCH CARD ════ */
+/* ════ SEARCH CARD
+   FIX 3: Removed the fake decorative "ENTER DRUG NAME TO ANALYZE" HTML box.
+   Now the card just has a styled label ABOVE the real Streamlit input — one input only.
+════ */
 .search-card {
     background: var(--card); border: 1px solid var(--border); border-radius: 20px;
     padding: 2rem; position: relative; overflow: hidden; margin-bottom: 2rem;
@@ -197,7 +201,11 @@ div[data-testid="stRadio"] > label { display: none !important; }
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
     background: linear-gradient(90deg, var(--accent), var(--accent2), transparent 80%);
 }
-.search-card-label { font-family: 'DM Mono', monospace; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 2.5px; color: var(--muted); margin-bottom: 1rem; }
+.search-card-label {
+    font-family: 'DM Mono', monospace; font-size: 0.68rem; text-transform: uppercase;
+    letter-spacing: 2.5px; color: var(--muted); margin-bottom: 0.75rem;
+    /* This is purely decorative text, not a box — the real input is directly below */
+}
 
 /* ════ INPUTS ════ */
 .stTextInput > div > div > input {
@@ -211,6 +219,7 @@ div[data-testid="stRadio"] > label { display: none !important; }
     border-color: var(--accent) !important; box-shadow: 0 0 0 3px rgba(0,200,255,0.1) !important;
 }
 .stTextInput > div > div > input::placeholder { color: var(--muted) !important; }
+/* Hide the Streamlit-generated label since we use our own styled label above */
 .stTextInput label { display: none !important; }
 
 .stTextArea > div > div > textarea {
@@ -419,8 +428,6 @@ with st.sidebar:
 
 # ─────────────────────────────────────────
 # PAGE 1: GENERATE BRIEF
-# FIX 3: Removed the fake decorative "ENTER DRUG NAME TO ANALYZE" HTML div.
-# Now only one real Streamlit input exists — no more confusion.
 # ─────────────────────────────────────────
 if "Generate Brief" in page:
 
@@ -469,11 +476,16 @@ if "Generate Brief" in page:
                 <div class="feature-desc">Download as .txt or build a full portfolio with batch mode.</div>
             </div>
         </div>
-        <div class="search-card">
-            <div class="search-card-label">Enter drug name to analyze</div>
     """, unsafe_allow_html=True)
 
-    # ── REAL INPUT — only one input now, no decorative duplicate ──
+    # ── FIX 3: Single search card — styled label text + ONE real Streamlit input below it ──
+    # The label is purely visual decoration (a <p> tag), not a fake input box.
+    # The actual interactive input field and button are rendered by Streamlit right below.
+    st.markdown("""
+        <div class="search-card">
+            <p class="search-card-label">Enter drug name to analyze</p>
+    """, unsafe_allow_html=True)
+
     col1, col2 = st.columns([4, 1])
     with col1:
         drug_name = st.text_input(
